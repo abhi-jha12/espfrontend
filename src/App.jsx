@@ -24,6 +24,7 @@ function App() {
   const [temperature, setTemperature] = useState(null);
   const [desiredTemperature, setDesiredTemperature] = useState(null);
   const [formattedUptime, setFormattedUptime] = useState("--");
+  const [humidity, setHumidity] = useState(null);
   useEffect(() => {
     const temperatureRef = ref(database, 'sensorData/temperature');
     onValue(temperatureRef, (snapshot) => {
@@ -38,20 +39,22 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    const humidityRef = ref(database, 'sensorData/humidity');
+    onValue(humidityRef, (snapshot) => {
+      setHumidity(snapshot.val());
+    });
+  }, []);
+
 
   useEffect(() => {
     const database = getDatabase();
     const timeref = ref(database, 'sensorData/uptime');
     onValue(timeref, (snapshot) => {
       const uptime = snapshot.val(); // Get uptime in milliseconds
-
-      // Convert uptime to days, hours, and minutes
-      const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((uptime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
-
-      // Format the uptime string
-      const formattedUptime = `${days}d ${hours}h ${minutes}m`;
+      const hours = Math.floor(uptime / 3600);
+      const minutes = Math.floor((uptime % 3600) / 60);
+      const formattedUptime = `${hours}h ${minutes}m`;
 
       setFormattedUptime(formattedUptime); // Update the formatted uptime state
     });
@@ -67,10 +70,9 @@ function App() {
 
     const handleUptimeChange = (snapshot) => {
       const uptime = snapshot.val();
-      const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((uptime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
-      const formattedUptime = `${days}d ${hours}h ${minutes}m`;
+      const hours = Math.floor(uptime / 3600);
+      const minutes = Math.floor((uptime % 3600) / 60);
+      const formattedUptime = `${hours}h ${minutes}m`;
       setFormattedUptime(formattedUptime);
     };
 
@@ -150,6 +152,7 @@ function App() {
           </form>
         </div>
         <h3 className="text-xl font-bold text-center mt-1 tracking-widest">UPTIME: {formattedUptime}</h3>
+        <h3 className="text-xl font-bold text-center mt-1 tracking-widest">Humidity: {humidity}%</h3>
         <button onClick={handleDownloadCSV} className='bg-black hover:bg-white text-white hover:text-black border-2 border-black font-bold py-2 px-4 rounded-xl tracking-widest'>Download Data</button>
       </div>
     </div>
